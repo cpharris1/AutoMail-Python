@@ -224,14 +224,14 @@ def write_result(data, dest_folder):
 
 #------------------------- Main program starts here! -------------------------------------------
 #Hard-coded presets
-senderEmail = "slawson@lawsonmyside.com"
-password = "Lu2S9B^eMXBgx"
+senderEmail = ""
+password = ""
 contactFilePath = "Not Selected"
 htmlFilePath = "Not Selected"
-smtpServer = "mail.lawsonmyside.com"
+smtpServer = ""
 smtpPort = 465
-senderName = "Susan Lawson <slawson@lawsonmyside.com>"
-emailSubject = "Attorney Referral Fees"
+senderName = ""
+emailSubject = ""
 waitTime = 60  # seconds
 listData = [[]]
 htmlStr = ""
