@@ -240,14 +240,18 @@ PW: lC@2sQ^9r&C6Eg
 # TODO: create separate program that reads in big csv file and separates into smaller ones
 
 #-------------------------Main program starts here! -------------------------------------------
-senderEmail = "jubox79@gmail.com"
-password = "W4HS7KO2"
+#senderEmail = "jubox79@gmail.com"
+#password = "W4HS7KO2"
+senderEmail = "susanlawson@lawsonmyside.com"
+password = "lC@2sQ^9r&C6Eg"
 contactFilePath = "Not Selected"
 htmlFilePath = "Not Selected"
-smtpServer = "smtp.gmail.com"
+#smtpServer = "smtp.gmail.com"
+smtpServer = "mail.lawsonmyside.com"
 smtpPort = 465
 #email settings
-senderName = "Susan Lawson, Esq."
+senderName = "Susan Lawson <susanlawson@lawsonmyside.com>"
+#senderName = senderEmail
 emailSubject = "Attorney Referral Fees"
 listData = [[]]
 htmlStr = ""
@@ -287,7 +291,6 @@ while True:
             exit_flag = True
         elif send == 'y':
             add_email_info = confirm_email(emailSubject, senderName, htmlFilePath)
-            emailSubject = add_email_info[0]
             senderName = add_email_info[1]
             exit_flag = add_email_info[2]
         if exit_flag:
