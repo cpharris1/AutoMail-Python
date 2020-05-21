@@ -11,6 +11,7 @@ import csv
 import webbrowser
 from datetime import date
 from datetime import datetime
+import time
 
 
 
@@ -67,6 +68,8 @@ def select_file(kind):
             root.filename = filedialog.askopenfilename(filetypes=(("CSV files", "*.csv"), ("All files", "*.*")))
         elif kind == "html":
             root.filename = filedialog.askopenfilename(filetypes=(("HTML files", "*.html"), ("txt files", "*.txt"), ("All files", "*.*")))
+        elif kind == "dir":
+            root.filename = filedialog.askdirectory()
 
         while True:
             print("\nSelected file: " + root.filename)
@@ -81,7 +84,7 @@ def select_file(kind):
 #File selection screen for contact list
 def select_contact_list():
     print_welcome()
-    print("\nPress ENTER to select a contact list file to import or 'q' to quit. Please select .CSV file type.")
+    print("\nPlease select contact list you wish to import. Please select .CSV file type.")
     selected_file_path = select_file("csv")
     print("\nSelected contact file to import: " + selected_file_path)
 
@@ -95,15 +98,13 @@ def import_email_list(file_path):
     with open(file_path) as csv_file:
         csv_reader = csv.reader(csv_file)
         data = list(csv_reader)
-
-    #TODO: post processing?
     return data
 
 
 #file selection screen for HTML email
 def get_html_email():
     print_welcome()
-    print("\nPress ENTER to select the HTML email to import. Please select .html or .txt file type.")
+    print("\nPlease select HTML email you wish to send. Please select .html or .txt file type.")
     selected_file_path = select_file("html")
     print("\nSelected contact file to import: " + selected_file_path)
     email_str = read_html_as_string(selected_file_path)
@@ -118,71 +119,69 @@ def read_html_as_string(file_path):
     return email_str
 
 
-def update_smtp(smtp_server, port):
-    print_welcome()
-    print("Current SMTP server: " + smtp_server)
-    print("Current port: " + str(port) + "\n")
+def update_smtp_headings(smtp_server, port, name, subj, sender_email):
+    updated_server = smtp_server
+    updated_port = port
+    updated_name = name
+    updated_subj = subj
+    while True:
+        print_welcome()
+        print("1. Current SMTP server: " + updated_server)
+        print("2. Current Port: " + str(updated_port))
+        print("3. Current Sender Name: " + updated_name)
+        print("4. Current Subject: " + updated_subj + "\n")
 
-    ans = input("Press ENTER to continue or 'q' to quit. ")
-    if ans:
-        return smtp_server, port
+        sel = input("Please input the number of the setting you wish to modify or 'q' to exit with above settings: ")
+        if sel == "1":
+            updated_server = input("\nPlease enter new SMTP server: ")
+            continue
+        elif sel == "2":
+            updated_port = input("\nPlease enter new port: ")
+            continue
+        elif sel == "3":
+            u_name = input("\nPlease enter new sender name: ")
+            updated_name = u_name + " <" + sender_email + ">"
+            continue
+        elif sel == "4":
+            updated_subj = input("\nPlease enter new subject: ")
+            continue
+        elif sel == "q":
+            return updated_server, int(updated_port), updated_name, updated_subj
+        else:
+            print("Invalid input. Press ENTER to continue.")
+            input()
 
-    updated_server = input("\nPlease enter new SMTP server: ")
-    updated_port = input("\nPlease enter new port: ")
-
-    input("\nPress ENTER to return to menu")
-    return updated_server, updated_port
 
 
-def confirm_settings(sender_email, smtp_server, port, contact_file, html_file):
+def confirm_settings(sender_email, smtp_server, port, contact_file, html_file, name, subj):
     while True:
         print_welcome()
         print("These are the current settings. Are you sure you want to continue?\n")
         print("Sender email: " + sender_email)
+        print("Sender Name: " + name)
+        print("Subject: " + subj)
+        print("HTML Email file: " + html_file)
         print("SMTP server: " + smtp_server)
         print("SMTP port: " + str(port))
         print("Contact list file: " + contact_file)
         print("Contact list file: " + html_file)
-        ans = input("\nPress 'Y' to continue or 'N' to return to menu. ")
+        ans = input("\nPress 'Y' to continue or 'N' to return to menu or 'P' to preview HTML file in browser.")
         if ans.lower() == 'n':
             return 'n'
         if ans.lower() == 'y':
             return 'y'
+        if ans.lower() == 'p':
+            webbrowser.open_new_tab(html_file)
         else:
             print("Invalid input. Please select either 'Y' or 'N'. Press ENTER to continue: ")
             input()
             continue
 
 
-def confirm_email(subject, email_from, html_file,):
-    up_name = email_from
-    up_subj = subject
-    e_flag = False
-    while True:
-        print_welcome()
-        print("These are the current settings. Are you sure you want to continue?\n")
-        print("Sender Name: " + up_name)
-        print("Subject: " + up_subj)
-        print("HTML Email file: " + html_file)
-        ans = input("\nPress 'Y' to continue, 'E' to edit name/subject, 'P' to preview HTML document in web browser, or 'q' to quit to menu. ")
-        if ans.lower() == 'y':
-            return up_subj, up_name, e_flag
-        elif ans.lower() == 'e':
-            up_name = input("\n Please input new sender name (not email): ")
-            up_subj = input("Please input new subject: ")
-        elif ans.lower() == 'p':
-            webbrowser.open_new_tab(html_file)
-            q_code = input("If you would like to change this, press 'Q' to exit to menu. or ENTER to continue.")
-            if q_code.lower() == 'q':
-                e_flag = True
-                return up_subj, up_name, e_flag
-        elif ans.lower() == 'q':
-            return up_subj, up_name, e_flag
-
-
 def send_email(receiver_email, sender_email, pwd, email_str, smtp_server, port, subj, from_name):
-    today = date.today()
-    date_sent = today.strftime("%m/%d/%Y")
+    now = datetime.now()
+    dt_sent = now.strftime("%d-%m-%Y %H-%M-%S")
+
 
     message = MIMEMultipart("alternative")
     message["Subject"] = subj
@@ -205,54 +204,35 @@ def send_email(receiver_email, sender_email, pwd, email_str, smtp_server, port, 
                 sender_email, receiver_email, message.as_string()
             )
         print("Successfully sent email to " + receiver_email)
-        return receiver_email, "Success", date_sent
+        return receiver_email, "Success", dt_sent
 
     except smtplib.SMTPException as error:
         print("\nCould not send email to " + receiver_email)
         print("Error: " + str(error))
-        return receiver_email, "Failed", date_sent
+        return receiver_email, "Failed", dt_sent
 
 
-def write_result(data):
+def write_result(data, dest_folder):
     now = datetime.now()
     dt_str = now.strftime("%d-%m-%Y %H-%M-%S")
     out_name = "output " + dt_str + ".csv"
-    with open(out_name, 'w', newline='') as csvfile:
+    target_filepath = os.path.join(dest_folder, out_name)
+    with open(target_filepath, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerows(data)
 
 
-'''
- Secure SSL/TLS Settings (Recommended)
-Username: 	susanlawson@lawsonmyside.com
-Password: 	Use the email account’s password.
-Incoming Server: 	mail.lawsonmyside.com
-
-    IMAP Port: 993
-    POP3 Port: 995
-
-Outgoing Server: 	mail.lawsonmyside.com
-
-    SMTP Port: 465
-
-PW: lC@2sQ^9r&C6Eg
-'''
-# TODO: create separate program that reads in big csv file and separates into smaller ones
-
-#-------------------------Main program starts here! -------------------------------------------
-#senderEmail = "jubox79@gmail.com"
-#password = "W4HS7KO2"
-senderEmail = "susanlawson@lawsonmyside.com"
-password = "lC@2sQ^9r&C6Eg"
+#------------------------- Main program starts here! -------------------------------------------
+#Hard-coded presets
+senderEmail = "slawson@lawsonmyside.com"
+password = "Lu2S9B^eMXBgx"
 contactFilePath = "Not Selected"
 htmlFilePath = "Not Selected"
-#smtpServer = "smtp.gmail.com"
 smtpServer = "mail.lawsonmyside.com"
 smtpPort = 465
-#email settings
-senderName = "Susan Lawson <susanlawson@lawsonmyside.com>"
-#senderName = senderEmail
+senderName = "Susan Lawson <slawson@lawsonmyside.com>"
 emailSubject = "Attorney Referral Fees"
+waitTime = 60  # seconds
 listData = [[]]
 htmlStr = ""
 resultData = []
@@ -268,9 +248,11 @@ while True:
 
     if usrSelect == '2':
         #function to update SMTP settings
-        smtpInfo = update_smtp(smtpServer, smtpPort)
+        smtpInfo = update_smtp_headings(smtpServer, smtpPort, senderName, emailSubject, senderEmail)
         smtpServer = smtpInfo[0]
         smtpPort = smtpInfo[1]
+        senderName = smtpInfo[2]
+        emailSubject = smtpInfo[3]
 
     elif usrSelect == '3':
         #function to select contact list
@@ -286,23 +268,20 @@ while True:
 
     elif usrSelect == '5':
         exit_flag = False
-        send = confirm_settings(senderEmail, smtpServer, smtpPort, contactFilePath, htmlFilePath)
+        send = confirm_settings(senderEmail, smtpServer, smtpPort, contactFilePath, htmlFilePath, senderName, emailSubject)
         if send == 'n':
             exit_flag = True
         elif send == 'y':
-            add_email_info = confirm_email(emailSubject, senderName, htmlFilePath)
-            senderName = add_email_info[1]
-            exit_flag = add_email_info[2]
-        if exit_flag:
-            continue
-        else:
+            print("Please select folder you wish to output results to.")
+            outputPath = select_file("dir")
             for contact in listData[1:]:
                 receiverAddress = contact[0]
                 #print(receiverAddress)
                 result = send_email(receiverAddress, senderEmail, password, htmlStr, smtpServer, smtpPort, emailSubject, senderName)
                 resultData.append(list(result))
-        input("Done! Press ENTER to continue.")
-        write_result(resultData)
+                time.sleep(waitTime)
+            input("Done! Press ENTER to continue.")
+            write_result(resultData, outputPath)
 
     elif usrSelect == 'q':
         quit()
