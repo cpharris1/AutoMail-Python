@@ -27,7 +27,7 @@ def menu_select(sender_email, contact_file, html_file, server, curr_port):
     print("SMTP server: " + server)
     print("SMTP port: " + str(curr_port))
     print("Contact list file: " + contact_file)
-    print("Contact list file: " + html_file)
+    print("HTML file: " + html_file)
 
     print("\nPlease make a selection:")
     print("1. Update Login Credentials")
