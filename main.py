@@ -73,7 +73,6 @@ def select_file(kind):
         while True:
             print("\nSelected file: " + root.filename)
             ans = input("\nIs this the file you wish to import? Press ENTER to continue, or 'N' to select new file. ").lower()
-
             if ans == 'n':
                 break
             else:
