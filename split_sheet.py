@@ -55,7 +55,7 @@ def split_csv(source_filepath, dest_folder, split_file_prefix, records_per_file)
             target_filepath = os.path.join(dest_folder, target_filename)
 
             with open(target_filepath, 'w', newline='') as target:
-                writer = csv.writer(target)
+                writer =  csv.writer(target)
 
                 while i < records_per_file:
                     if i == 0:
@@ -80,7 +80,7 @@ splitName = "split_email_list"
 numRecords = input("Please indicate the number of records per split file: ")
 numRecords = int(numRecords)
 
-print("\nSelect file you wish to import. Make sure it is a .csv file.")
+print("\nSelect file you wish to split. Make sure it is a .csv file.")
 fileSource = select_file("csv")
 print("\nSelect folder you wish to output files to.")
 destPath = select_file("dir")
